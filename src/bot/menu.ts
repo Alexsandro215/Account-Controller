@@ -2,13 +2,13 @@ export function menuText(): string {
   return [
     "Menu",
     "",
-    "1. Guardar credencial",
-    "2. Buscar credencial",
-    "3. Ver categorias",
+    "1. Ver categorias",
+    "2. Crear credencial",
+    "3. Ver credenciales de categoria",
     "",
     "Comandos rapidos:",
-    "- guardar",
-    "- buscar netflix",
-    "- categorias"
+    "- categorias",
+    "- crear",
+    "- ver categoria"
   ].join("\n");
 }

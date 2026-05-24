@@ -1,21 +1,18 @@
 export type SaveDraft = {
-  service?: string;
   email?: string;
   password?: string;
   category?: string;
-  aliases?: string[];
-  notes?: string;
 };
 
 export type Session =
-  | { type: "saving"; step: "service" | "email" | "password" | "category" | "aliases" | "notes"; draft: SaveDraft; expiresAt: number }
-  | { type: "choosing"; credentialIds: string[]; expiresAt: number }
-  | { type: "unlocking"; credentialId: string; expiresAt: number };
+  | { type: "saving"; step: "category" | "email" | "password"; draft: SaveDraft; expiresAt: number }
+  | { type: "choosingCategory"; expiresAt: number }
+  | { type: "unlockingCategory"; category: string; expiresAt: number };
 
 export type SessionInput =
-  | { type: "saving"; step: "service" | "email" | "password" | "category" | "aliases" | "notes"; draft: SaveDraft }
-  | { type: "choosing"; credentialIds: string[] }
-  | { type: "unlocking"; credentialId: string };
+  | { type: "saving"; step: "category" | "email" | "password"; draft: SaveDraft }
+  | { type: "choosingCategory" }
+  | { type: "unlockingCategory"; category: string };
 
 const ttlMs = 60_000;
 const sessions = new Map<string, Session>();

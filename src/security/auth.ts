@@ -1,8 +1,8 @@
 import { timingSafeEqual } from "node:crypto";
 import { config } from "../config.js";
 
-export function isAuthorizedPhone(phone: string): boolean {
-  return phone === config.AUTHORIZED_PHONE;
+export function isAuthorizedTelegramUser(userId: string): boolean {
+  return config.AUTHORIZED_TELEGRAM_USER_ID !== "" && userId === config.AUTHORIZED_TELEGRAM_USER_ID;
 }
 
 export function isValidPin(input: string): boolean {
