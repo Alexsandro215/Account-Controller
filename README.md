@@ -1,6 +1,6 @@
 # Account Controller
 
-MVP de una boveda personal para pedir y guardar credenciales por Telegram.
+Boveda personal para pedir y guardar credenciales por Telegram.
 
 ## Stack
 
