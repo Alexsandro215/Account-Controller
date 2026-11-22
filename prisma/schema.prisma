@@ -7,20 +7,97 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Service, user and category stay in clear text so the vault can be browsed and searched
+// while it is locked. Every secret (password, notes, 2FA seed) is sealed with the vault's
+// public key and can only be opened with the master password or the recovery code.
 model Credential {
-  id                 String   @id @default(cuid())
-  service            String
-  email              String
-  category           String
-  aliases            String[] @default([])
+  id                String    @id @default(cuid())
+  service           String
+  email             String
+  category          String
+  aliases           String[]  @default([])
+  passwordSealed    String?
+  notesSealed       String?
+  totpSealed        String?
+  passwordChangedAt DateTime  @default(now())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Legacy format (before the master password): encrypted with VAULT_MASTER_KEY only.
+  // Migrated to passwordSealed/notesSealed when the vault is set up, then cleared.
   notes              String?
-  passwordCiphertext String
-  passwordIv         String
-  passwordAuthTag    String
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  passwordCiphertext String?
+  passwordIv         String?
+  passwordAuthTag    String?
+
+  history CredentialHistory[]
 
   @@index([service])
   @@index([email])
   @@index([category])
+}
+
+// Previous passwords of a credential, sealed exactly as they were.
+model CredentialHistory {
+  id             String     @id @default(cuid())
+  credentialId   String
+  credential     Credential @relation(fields: [credentialId], references: [id], onDelete: Cascade)
+  passwordSealed String
+  replacedAt     DateTime   @default(now())
+
+  @@index([credentialId])
+}
+
+// The vault's key pair. The private key is stored twice, wrapped by a key derived from
+// the master password (+ VAULT_MASTER_KEY as pepper) and by one derived from the
+// recovery code. Single row (id = 1).
+model VaultKey {
+  id           Int      @id @default(1)
+  publicKey    String
+  masterSalt   String
+  masterKdf    String
+  masterWrap   String
+  recoverySalt String
+  recoveryKdf  String
+  recoveryWrap String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model AuditEvent {
+  id           String   @id @default(cuid())
+  at           DateTime @default(now())
+  action       String
+  credentialId String?
+  label        String?
+  detail       String?
+
+  @@index([at])
+}
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// Bot messages that must be deleted from Telegram later (revealed passwords, etc.).
+// Persisted so a restart does not leave secrets sitting in the chat.
+model PendingDeletion {
+  id        String   @id @default(cuid())
+  chatId    BigInt
+  messageId Int
+  deleteAt  DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([chatId, messageId])
+  @@index([deleteAt])
+}
+
+// Consecutive wrong master password / recovery code attempts and the resulting lock.
+model UnlockGuard {
+  userId         String    @id
+  failedAttempts Int       @default(0)
+  lockedUntil    DateTime?
+  updatedAt      DateTime  @updatedAt
 }

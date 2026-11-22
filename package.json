@@ -1,27 +1,37 @@
 {
   "name": "account-controller",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
+    "start:prod": "prisma migrate deploy && node dist/index.js",
     "build": "tsc",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit && tsc -p test/tsconfig.json",
+    "test": "tsx --test \"test/**/*.test.ts\"",
+    "check": "npm run lint && npm test && npm run build"
   },
   "dependencies": {
     "@prisma/client": "^6.8.2",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "jpeg-js": "^0.4.4",
+    "jsqr": "^1.4.0",
+    "prisma": "^6.8.2",
     "zod": "^3.24.4"
   },
   "devDependencies": {
     "@types/express": "^5.0.1",
     "@types/node": "^22.15.21",
-    "prisma": "^6.8.2",
+    "@types/qrcode": "^1.5.6",
+    "qrcode": "^1.5.4",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }
